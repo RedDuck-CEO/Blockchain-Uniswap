@@ -44,6 +44,8 @@ namespace WebSocket.Uniswap
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "WebSocket.Uniswap v1"));
             }
 
+            app.UseWebSockets();
+
             app.UseHttpsRedirection();
 
             app.UseRouting();
