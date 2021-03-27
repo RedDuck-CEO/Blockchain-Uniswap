@@ -193,19 +193,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\NickoMR\\.nuget\\packages\\": {}
+    "C:\\Users\\kotyk\\.nuget\\packages\\": {},
+    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\NickoMR\\source\\repos\\WebSocket.Uniswap\\WebSocket.Uniswap\\WebSocket.Uniswap.csproj",
+      "projectUniqueName": "C:\\Users\\kotyk\\Source\\Repos\\Hackathon-Blockchain-Uniswap\\WebSocket.Uniswap\\WebSocket.Uniswap.csproj",
       "projectName": "WebSocket.Uniswap",
-      "projectPath": "C:\\Users\\NickoMR\\source\\repos\\WebSocket.Uniswap\\WebSocket.Uniswap\\WebSocket.Uniswap.csproj",
-      "packagesPath": "C:\\Users\\NickoMR\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\NickoMR\\source\\repos\\WebSocket.Uniswap\\WebSocket.Uniswap\\obj\\",
+      "projectPath": "C:\\Users\\kotyk\\Source\\Repos\\Hackathon-Blockchain-Uniswap\\WebSocket.Uniswap\\WebSocket.Uniswap.csproj",
+      "packagesPath": "C:\\Users\\kotyk\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\kotyk\\Source\\Repos\\Hackathon-Blockchain-Uniswap\\WebSocket.Uniswap\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+      ],
       "configFilePaths": [
-        "C:\\Users\\NickoMR\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\kotyk\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -254,7 +258,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.201\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.103\\RuntimeIdentifierGraph.json"
       }
     }
   }

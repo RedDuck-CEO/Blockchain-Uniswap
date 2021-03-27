@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\kotyk\\Source\\Repos\\Hackathon-Blockchain-Uniswap\\WebSocket.Uniswap\\WebSocket.Uniswap.csproj": {}
+    "C:\\Users\\kotyk\\Source\\Repos\\Hackathon-Blockchain-Uniswap\\FSharpBack\\FSharpBack.fsproj": {}
   },
   "projects": {
-    "C:\\Users\\kotyk\\Source\\Repos\\Hackathon-Blockchain-Uniswap\\WebSocket.Uniswap\\WebSocket.Uniswap.csproj": {
+    "C:\\Users\\kotyk\\Source\\Repos\\Hackathon-Blockchain-Uniswap\\FSharpBack\\FSharpBack.fsproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\kotyk\\Source\\Repos\\Hackathon-Blockchain-Uniswap\\WebSocket.Uniswap\\WebSocket.Uniswap.csproj",
-        "projectName": "WebSocket.Uniswap",
-        "projectPath": "C:\\Users\\kotyk\\Source\\Repos\\Hackathon-Blockchain-Uniswap\\WebSocket.Uniswap\\WebSocket.Uniswap.csproj",
+        "projectUniqueName": "C:\\Users\\kotyk\\Source\\Repos\\Hackathon-Blockchain-Uniswap\\FSharpBack\\FSharpBack.fsproj",
+        "projectName": "FSharpBack",
+        "projectPath": "C:\\Users\\kotyk\\Source\\Repos\\Hackathon-Blockchain-Uniswap\\FSharpBack\\FSharpBack.fsproj",
         "packagesPath": "C:\\Users\\kotyk\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\kotyk\\Source\\Repos\\Hackathon-Blockchain-Uniswap\\WebSocket.Uniswap\\obj\\",
+        "outputPath": "C:\\Users\\kotyk\\Source\\Repos\\Hackathon-Blockchain-Uniswap\\FSharpBack\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
@@ -21,31 +21,27 @@
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
-          "net5.0"
+          "netcoreapp3.1"
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net5.0": {
-            "targetAlias": "net5.0",
+          "netcoreapp3.1": {
+            "targetAlias": "netcoreapp3.1",
             "projectReferences": {}
           }
-        },
-        "warningProperties": {
-          "warnAsError": [
-            "NU1605"
-          ]
         }
       },
       "frameworks": {
-        "net5.0": {
-          "targetAlias": "net5.0",
+        "netcoreapp3.1": {
+          "targetAlias": "netcoreapp3.1",
           "dependencies": {
-            "Swashbuckle.AspNetCore": {
+            "FSharp.Core": {
               "target": "Package",
-              "version": "[5.6.3, )"
+              "version": "[5.0.0, )",
+              "generatePathProperty": true
             }
           },
           "imports": [
@@ -59,9 +55,6 @@
           "assetTargetFallback": true,
           "warn": true,
           "frameworkReferences": {
-            "Microsoft.AspNetCore.App": {
-              "privateAssets": "none"
-            },
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
