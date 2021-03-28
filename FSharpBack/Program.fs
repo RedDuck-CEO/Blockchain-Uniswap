@@ -217,7 +217,7 @@ module Logic =
             volume = volume;
         }
 
-    let getCandles(pairId: string, swaps: Requests.Swap list, callback) = 
+    let getCandles(pairId: string, callback) = 
         let pair = Requests.takeInfo(pairId)
         let res0 = pair.Value.reserve0 |> decimal
         let res1 = pair.Value.reserve1 |> decimal
@@ -226,11 +226,12 @@ module Logic =
         
         let mutable candles = []
         while true do
-            candles <- buildCandle(
-                getSwapsInScope(
-                        swaps, 
-                        timeMinuteAgo.ToUnixTimeSeconds(), 
-                        currentTime.ToUnixTimeSeconds()), res0, res1) :: candles
+            let currentSwaps = (id |> Requests.takeSwaps).Value
+            let candle = buildCandle(getSwapsInScope(
+                                        currentSwaps, 
+                                        timeMinuteAgo.ToUnixTimeSeconds(), 
+                                        currentTime.ToUnixTimeSeconds()), res0, res1)
+            candles <- candle :: candles
             currentTime <- timeMinuteAgo
             timeMinuteAgo <- currentTime.AddMinutes(-1 |> float)
             callback candles
@@ -241,5 +242,5 @@ module Logic =
 let main args =
     //Async.RunSynchronously <| asyncMain
     let id = "0xa478c2975ab1ea89e8196811f51a7b7ade33eb11"
-    (id, (id |> Requests.takeSwaps).Value, fun c -> printfn "%A" c) |> Logic.getCandles |> Requests.allPr
+    (id, fun c -> printfn "%A" c) |> Logic.getCandles |> Requests.allPr
     0               
