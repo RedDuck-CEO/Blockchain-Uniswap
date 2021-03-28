@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
 using System.Net.WebSockets;
@@ -12,6 +13,26 @@ namespace Test.Uniswap
     public class WebSocketTest
     {
         private const string webSocketURL = "wss://localhost:5001/socket";
+
+        [TestMethod]
+        public async Task GetCandles()
+        {
+            var buffer = new byte[1024 * 4];
+
+            string request = @"{
+                            ""event"": ""subscibe"",
+                            ""channel"": ""candles"",
+                            ""key"": ""trade:1m:tBTCUSD""
+                            }";
+
+            //var message = JsonConvert.DeserializeObject<CandleUpdate>(request);
+
+            var client = await CreateConnectWithLocalWebSocket();
+
+            var bytes = Encoding.UTF8.GetBytes(request);
+            await client.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, CancellationToken.None);
+        }
+
 
         [TestMethod]
         public async Task PlayPingPongWebSocketTest()
