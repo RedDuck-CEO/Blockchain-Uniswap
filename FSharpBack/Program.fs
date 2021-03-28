@@ -88,12 +88,12 @@ module Requests =
         else data |> JToken.Parse |> Some
     
     let allPr x = printfn "%A" x
-    
+   
     let takeTop100 = top100Query |> requestMaker |> deserialize |> mapTop100
     let takeSwaps idPair = idPair |> swapsQuery |> requestMaker |> deserialize |> mapSwaps
     let takeInfo idPair = idPair |> pairInfoQuery |> requestMaker |> deserialize |> mapPairInfo
     
-    //"0xa478c2975ab1ea89e8196811f51a7b7ade33eb11" |> takeSwaps |> allPr
+    "0xa478c2975ab1ea89e8196811f51a7b7ade33eb11" |> takeSwaps |> allPr
     //takeTop100 |> allPr 
 
 type Candle = { 
@@ -119,6 +119,10 @@ module DB =
     let private insertCandleSql = 
         "insert into candles(datetime, resolutionSeconds, uniswapPairId, open, high, low, close, volume) " + 
         "values (@datetime, @resolutionSeconds, @uniswapPairId, @_open, @high, @low, @close, @volume)"
+        
+    let private updateCandleSql = 
+        "update candles set open = @_open, high = @high, low = @low, close = @close, volume = @volume) " + 
+        "values uniswapPairId = @uniswapPairId and resolutionSeconds = @resolutionSeconds and datetime = @datetime)"
 
     let inline (=>) k v = k, box v
 
@@ -137,8 +141,11 @@ module DB =
                 dbQuery<Candle> connection fetchCandlesSql 
                     (Some(dict [ "uniswapPairId" => uniswapPairId; "resolutionSeconds" => resolutionSeconds ]))
 
-            return List.ofSeq candles
+            return candles
         }
+    
+    
+    let fetchCandlesTask (uniswapPairId:string) (resolutionSeconds:int) = Async.StartAsTask <| fetchCandles uniswapPairId resolutionSeconds
     let addCandle candle = 
         async {
             let queryParams = dict [
@@ -153,7 +160,23 @@ module DB =
                     ]
 
             let! rowsChanged = Async.AwaitTask <| dbExecute connection insertCandleSql candle
+            printfn "records added: %i" rowsChanged
+        }
+    
+    let updateCandle candle = 
+        async {
+            let queryParams = dict [
+                    "datetime" => candle.datetime; 
+                    "resolutionSeconds" => candle.resolutionSeconds;
+                    "uniswapPairId" => candle.uniswapPairId;
+                    "open" => candle._open;
+                    "high" => candle.high;
+                    "low" => candle.low;
+                    "close" => candle.close;
+                    "volume" => candle.volume
+                    ]
 
+            let! rowsChanged = Async.AwaitTask <| dbExecute connection updateCandleSql candle
             printfn "records added: %i" rowsChanged
         }
     
@@ -178,6 +201,7 @@ let asyncMain = async {
     let! candles = DB.fetchCandles candle.uniswapPairId candle.resolutionSeconds
 
     printfn "candles 2: %A" candles
+
 }
 
 module Logic = 
@@ -235,7 +259,8 @@ module Logic =
             candles <- candle :: candles
             currentTime <- timeMinuteAgo
             timeMinuteAgo <- currentTime.AddMinutes(-1 |> float)
-            callback candles
+            let c = Seq.ofList candles
+            callback c
             Threading.Thread.Sleep(1000)
         ()
 
