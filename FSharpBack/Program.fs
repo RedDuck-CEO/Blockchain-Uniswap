@@ -56,7 +56,7 @@ module Requests =
               OperationName = Some "q" }
         GraphQLClient.sendRequest connection request
     
-    type Swaps = { amount0In: float; amount0Out: float; amount1In:float; amount1Out: float; timestamp: int64 } 
+    type Swap = { id: string; amount0In: float; amount0Out: float; amount1In:float; amount1Out: float; timestamp: int64 } 
     type PairInfo = { reserve0: float; reserve1: float; price0: float; price1: float }
     
     let mapTop100 (token: JToken Option) =
@@ -69,7 +69,7 @@ module Requests =
       
     let mapSwaps (token: JToken Option) =
         let mapper (token : JProperty) =
-            token.Value.["swaps"] |> Seq.map (fun x -> { amount0In=(float x.["amount0In"]); amount0Out=(float x.["amount0Out"]); amount1In=(float x.["amount1In"]); amount1Out=(float x.["amount1Out"]); timestamp=(int64 x.["timestamp"]);})
+            token.Value.["swaps"] |> Seq.map (fun x -> { id=(string x.["id"]); amount0In=(float x.["amount0In"]); amount0Out=(float x.["amount0Out"]); amount1In=(float x.["amount1In"]); amount1Out=(float x.["amount1Out"]); timestamp=(int64 x.["timestamp"]);})
         match token with
         |Some token -> token.Children<JProperty>() |> Seq.last |> mapper |> List.ofSeq |> Some
         |None -> None
@@ -180,7 +180,66 @@ let asyncMain = async {
     printfn "candles 2: %A" candles
 }
 
+module Logic = 
+    let milisecondsInMinute = 60000
+
+    let getSwapsInScope(swaps: Requests.Swap list, timestampAfter: int64, timestampBefore: int64) =
+        swaps |> List.filter(fun s -> s.timestamp > timestampAfter && s.timestamp < timestampBefore)
+
+    let countSwapPrice(resBase: decimal, resQuote: decimal) = 
+        resQuote / resBase
+
+    let buildCandle (swapsSlice: Requests.Swap list, res0: decimal, res1: decimal) = 
+        let mutable currentRes0 = res0
+        let mutable currentRes1 = res1
+        let mutable k = currentRes0 * currentRes1
+        let mutable highPrice = 0 |> decimal
+        let mutable lowPrice = Decimal.MaxValue
+        let mutable openPrice = 0 |> decimal
+        let mutable closePrice = currentRes1 / currentRes0
+        let mutable volume = 0m
+        for s in swapsSlice do
+            currentRes1 <- currentRes1 - ((s.amount1In + s.amount1Out) |> decimal)
+            currentRes0 <- k / currentRes1
+            let currentPrice = currentRes1 / currentRes0
+            if (currentPrice > highPrice) then highPrice <- currentPrice
+            if (currentPrice < lowPrice) then lowPrice <- currentPrice
+            volume <- volume + ((s.amount1In + s.amount1Out) |> decimal)
+        openPrice <- currentRes1 / currentRes0
+        {
+            datetime = DateTime(1970, 01, 01);
+            resolutionSeconds = 60;
+            uniswapPairId = "";
+            _open = openPrice;
+            high = highPrice;
+            low = lowPrice;
+            close = closePrice;
+            volume = volume;
+        }
+
+    let getCandles(pairId: string, swaps: Requests.Swap list, callback) = 
+        let pair = Requests.takeInfo(pairId)
+        let res0 = pair.Value.reserve0 |> decimal
+        let res1 = pair.Value.reserve1 |> decimal
+        let mutable currentTime = new DateTimeOffset(DateTime.UtcNow)
+        let mutable timeMinuteAgo = currentTime.AddMinutes(-1 |> float)
+        
+        let mutable candles = []
+        while true do
+            candles <- buildCandle(
+                getSwapsInScope(
+                        swaps, 
+                        timeMinuteAgo.ToUnixTimeSeconds(), 
+                        currentTime.ToUnixTimeSeconds()), res0, res1) :: candles
+            currentTime <- timeMinuteAgo
+            timeMinuteAgo <- currentTime.AddMinutes(-1 |> float)
+            callback candles
+            Threading.Thread.Sleep(1000)
+        ()
+
 [<EntryPoint>]
 let main args =
-    Async.RunSynchronously <| asyncMain
+    //Async.RunSynchronously <| asyncMain
+    let id = "0xa478c2975ab1ea89e8196811f51a7b7ade33eb11"
+    (id, (id |> Requests.takeSwaps).Value, fun c -> printfn "%A" c) |> Logic.getCandles |> Requests.allPr
     0               
