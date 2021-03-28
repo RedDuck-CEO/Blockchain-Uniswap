@@ -97,7 +97,7 @@ module Requests =
     //takeTop100 |> allPr 
 
 type Candle = { 
-    datetime:DateTime; 
+    mutable datetime:DateTime; 
     resolutionSeconds:int; 
     uniswapPairId:string;
     _open:decimal;
@@ -231,6 +231,7 @@ module Logic =
                                         currentSwaps, 
                                         timeMinuteAgo.ToUnixTimeSeconds(), 
                                         currentTime.ToUnixTimeSeconds()), res0, res1)
+            candle.datetime <- timeMinuteAgo.DateTime
             candles <- candle :: candles
             currentTime <- timeMinuteAgo
             timeMinuteAgo <- currentTime.AddMinutes(-1 |> float)
