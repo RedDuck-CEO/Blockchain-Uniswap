@@ -2,9 +2,11 @@
 
 open System
 open FSharp.Data.GraphQL
-open FSharp.Data.GraphQL.Ast
-open Newtonsoft.Json
 open Newtonsoft.Json.Linq
+open System.Data.SQLite
+open System.Collections
+open System.Collections.Generic
+open Dapper
 
 module Requests = 
     
@@ -92,4 +94,93 @@ module Requests =
     let takeInfo idPair = idPair |> pairInfoQuery |> requestMaker |> deserialize |> mapPairInfo
     
     //"0xa478c2975ab1ea89e8196811f51a7b7ade33eb11" |> takeSwaps |> allPr
-    takeTop100 |> allPr 
+    //takeTop100 |> allPr 
+
+type Candle = { 
+    datetime:DateTime; 
+    resolutionSeconds:int; 
+    uniswapPairId:string;
+    _open:decimal;
+    high:decimal;
+    low:decimal;
+    close:decimal;
+    volume:decimal;
+}
+
+module DB = 
+    let private databaseFilename = __SOURCE_DIRECTORY__ + @"\Database\candles.db"
+    let private connectionString = sprintf "Data Source=%s;Version=3;" databaseFilename
+    let private connection = new SQLiteConnection(connectionString)
+    do connection.Open()
+   
+    let private fetchCandlesSql = @"select datetime, resolutionSeconds, uniswapPairId, open as _open, high, low, close, volume from candles
+        where uniswapPairId = @uniswapPairId and resolutionSeconds = @resolutionSeconds"
+
+    let private insertCandleSql = 
+        "insert into candles(datetime, resolutionSeconds, uniswapPairId, open, high, low, close, volume) " + 
+        "values (@datetime, @resolutionSeconds, @uniswapPairId, @_open, @high, @low, @close, @volume)"
+
+    let inline (=>) k v = k, box v
+
+    let private dbQuery<'T> (connection:SQLiteConnection) (sql:string) (parameters:IDictionary<string, obj> option) = 
+        match parameters with
+        | Some(p) -> connection.QueryAsync<'T>(sql, p)
+        | None    -> connection.QueryAsync<'T>(sql)
+
+    let private dbExecute (connection:SQLiteConnection) (sql:string) (data:_) = 
+        connection.ExecuteAsync(sql, data)
+    
+    let fetchCandles (uniswapPairId:string) (resolutionSeconds:int) = 
+        async {            
+            let! candles = 
+                Async.AwaitTask <| 
+                dbQuery<Candle> connection fetchCandlesSql 
+                    (Some(dict [ "uniswapPairId" => uniswapPairId; "resolutionSeconds" => resolutionSeconds ]))
+
+            return List.ofSeq candles
+        }
+    let addCandle candle = 
+        async {
+            let queryParams = dict [
+                    "datetime" => candle.datetime; 
+                    "resolutionSeconds" => candle.resolutionSeconds;
+                    "uniswapPairId" => candle.uniswapPairId;
+                    "open" => candle._open;
+                    "high" => candle.high;
+                    "low" => candle.low;
+                    "close" => candle.close;
+                    "volume" => candle.volume
+                    ]
+
+            let! rowsChanged = Async.AwaitTask <| dbExecute connection insertCandleSql candle
+
+            printfn "records added: %i" rowsChanged
+        }
+    
+let asyncMain = async {
+    let! candles = DB.fetchCandles "0" 0
+
+    printfn "candles 1: %A" candles
+
+    let candle = {
+        datetime = DateTime(2004, 03, 28);
+        resolutionSeconds = 60;
+        uniswapPairId = "tratata";
+        _open = 10m;
+        high = 11.0555m;
+        low = 0.00003m;
+        close = 0.0001m;
+        volume = 0.0001m;
+    }
+
+    do! DB.addCandle candle
+
+    let! candles = DB.fetchCandles candle.uniswapPairId candle.resolutionSeconds
+
+    printfn "candles 2: %A" candles
+}
+
+[<EntryPoint>]
+let main args =
+    Async.RunSynchronously <| asyncMain
+    0               
