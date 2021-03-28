@@ -84,27 +84,6 @@ namespace Test.Uniswap
 
         #region Helpers
 
-        private static async Task<string> Receiving(ClientWebSocket client)
-        {
-            var buffer = new byte[1024 * 4];
-
-            while (true)
-            {
-                var result = await client.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-
-                if (result.MessageType == WebSocketMessageType.Text)
-                {
-                    return Encoding.UTF8.GetString(buffer, 0, result.Count).TrimEnd('\0');
-                }
-                else if (result.MessageType == WebSocketMessageType.Close)
-                {
-                    await client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
-                    break;
-                }
-            }
-            return null;
-        }
-
         private async Task<ClientWebSocket> CreateConnectWithLocalWebSocket()
         {
             var client = new ClientWebSocket();
