@@ -10,11 +10,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SQLProvider" Version="1.2.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="5.0.1" />
+    <PackageReference Include="FSharp.Data.GraphQL.Client" Version="1.0.7" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+	<PackageReference Update="FSharp.Core" Version="5.0.1" />
   </ItemGroup>
 
 </Project>
