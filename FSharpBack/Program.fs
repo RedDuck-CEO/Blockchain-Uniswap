@@ -250,7 +250,7 @@ module Logic =
         
         let mutable candles = []
         while true do
-            let currentSwaps = (id |> Requests.takeSwaps).Value
+            let currentSwaps = (pairId |> Requests.takeSwaps).Value
             let candle = buildCandle(getSwapsInScope(
                                         currentSwaps, 
                                         timeMinuteAgo.ToUnixTimeSeconds(), 
@@ -261,6 +261,7 @@ module Logic =
             timeMinuteAgo <- currentTime.AddMinutes(-1 |> float)
             let c = Seq.ofList candles
             callback c
+            Seq.iter (DB.addCandle >> Async.RunSynchronously) c
             Threading.Thread.Sleep(1000)
         ()
 
@@ -269,4 +270,3 @@ let main args =
     //Async.RunSynchronously <| asyncMain
     let id = "0xa478c2975ab1ea89e8196811f51a7b7ade33eb11"
     (id, fun c -> printfn "%A" c) |> Logic.getCandles |> Requests.allPr
-    0               
