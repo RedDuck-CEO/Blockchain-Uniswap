@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Text;
+using Newtonsoft.Json;
+using WebSocket.Uniswap.Models;
 
 namespace WebSocket.Uniswap.Infrastructure
 {
@@ -27,6 +29,7 @@ namespace WebSocket.Uniswap.Infrastructure
         public event EventHandler<string> ReceiveText;
 
         public event EventHandler<byte[]> ReceiveBinary;
+
         #endregion
 
         #region Constructor
@@ -72,7 +75,7 @@ namespace WebSocket.Uniswap.Infrastructure
                             OnReceivePingPong(webSocketMessage);
                         }
                         else
-                           OnReceiveBinary(receivePayloadBuffer);
+                            OnReceiveBinary(receivePayloadBuffer);
                     }
                     else
                     {
@@ -81,6 +84,8 @@ namespace WebSocket.Uniswap.Infrastructure
                         {
                             OnReceivePingPong(webSocketMessage);
                         }
+                        else if (webSocketMessage.Contains("CANDLES"))
+                            OnReceiveCandles(webSocketMessage);
                         else
                             OnReceiveText(webSocketMessage);
                     }
@@ -108,6 +113,17 @@ namespace WebSocket.Uniswap.Infrastructure
         private void OnReceivePingPong(string webSocketMessage)
         {
             webSocketMessage = "PONG";
+            ReceiveText?.Invoke(this, webSocketMessage);
+        }
+
+        private void OnReceiveCandles(string webSocketMessage)
+        {
+            var webSocketRequest = JsonConvert.DeserializeObject<CandleUpdate>(webSocketMessage);
+            var arrayKeyParam = webSocketRequest.KeyParam.Split(':');
+            int resolution = arrayKeyParam[1] == "1m" ? 60 : 60;
+
+            CandleEvent.GetCandles(arrayKeyParam[2], resolution);
+
             ReceiveText?.Invoke(this, webSocketMessage);
         }
 
